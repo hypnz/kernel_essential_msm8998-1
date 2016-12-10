@@ -16,7 +16,11 @@
 #include <linux/slab.h>
 #include <trace/events/power.h>
 
+#ifdef CONFIG_SCHED_MUQSS
+#include "MuQSS.h"
+#else
 #include "sched.h"
+#endif
 #include "tune.h"
 
 unsigned long boosted_cpu_util(int cpu);
@@ -197,6 +201,16 @@ static inline bool use_pelt(void)
 #endif
 }
 
+#ifdef CONFIG_SCHED_MUQSS
+static void sugov_get_util(unsigned long *util, unsigned long *max)
+{
+	struct rq *rq = this_rq();
+ 	*util = rq->load_avg;
+	if (*util > SCHED_CAPACITY_SCALE)
+		*util = SCHED_CAPACITY_SCALE;
+	*max = SCHED_CAPACITY_SCALE;
+}
+#else /* CONFIG_SCHED_MUQSS */
 static void sugov_get_util(unsigned long *util, unsigned long *max, u64 time)
 {
 	int cpu = smp_processor_id();
@@ -220,6 +234,7 @@ static void sugov_get_util(unsigned long *util, unsigned long *max, u64 time)
 	*util = min(*util, max_cap);
 	*max = max_cap;
 }
+#endif /* CONFIG_SCHED_MUQSS */
 
 static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
 				   unsigned int flags)

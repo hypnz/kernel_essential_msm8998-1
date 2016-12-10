@@ -224,9 +224,13 @@ DEFINE_PER_CPU(bool, cpu_dead_idle);
 static void do_idle(void)
 {
 	int cpu = smp_processor_id();
+	bool pending = false;
 
 	__current_set_polling();
-	tick_nohz_idle_enter();
+	if (unlikely(softirq_pending(cpu)))
+		pending = true;
+	else
+		tick_nohz_idle_enter();
 
 	while (!need_resched()) {
 		check_pgt_cache();
@@ -267,7 +271,8 @@ static void do_idle(void)
 	 * an IPI to fold the state for us.
 	 */
 	preempt_set_need_resched();
-	tick_nohz_idle_exit();
+	if (!pending)
+		tick_nohz_idle_exit();
 	__current_clr_polling();
 
 	/*

@@ -1346,7 +1346,7 @@ cascade:
  * Check, if the next hrtimer event is before the next timer wheel
  * event:
  */
-static u64 cmp_next_hrtimer_event(u64 basem, u64 expires)
+static u64 cmp_next_hrtimer_event(struct timer_base *base, u64 basem, u64 expires)
 {
 	u64 nextevt = hrtimer_get_next_event();
 
@@ -1363,6 +1363,9 @@ static u64 cmp_next_hrtimer_event(u64 basem, u64 expires)
 	 */
 	if (nextevt <= basem)
 		return basem;
+
+	if (nextevt < expires && nextevt - basem <= TICK_NSEC)
+		base->is_idle = false;
 
 	/*
 	 * Round up to the next jiffie. High resolution timers are
@@ -1432,7 +1435,7 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
 	}
 	spin_unlock(&base->lock);
 
-	return cmp_next_hrtimer_event(basem, expires);
+	return cmp_next_hrtimer_event(base, basem, expires);
 }
 #endif
 
