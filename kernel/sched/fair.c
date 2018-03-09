@@ -3561,6 +3561,11 @@ static inline unsigned long _task_util_est(struct task_struct *p)
 
 static inline unsigned long task_util_est(struct task_struct *p)
 {
+#ifdef CONFIG_SCHED_WALT
+	if (likely(!walt_disabled && sysctl_sched_use_walt_task_util))
+		return (p->ravg.demand /
+			(walt_ravg_window >> SCHED_CAPACITY_SHIFT));
+#endif
 	return max(task_util(p), _task_util_est(p));
 }
 
@@ -6412,7 +6417,7 @@ schedtune_task_margin(struct task_struct *p)
 	if (boost == 0)
 		return 0;
 
-	util = task_util(p);
+	util = task_util_est(p);
 	margin = schedtune_margin(util, boost);
 
 	return margin;
@@ -6448,7 +6453,7 @@ boosted_cpu_util(int cpu)
 static inline unsigned long
 boosted_task_util(struct task_struct *p)
 {
-	unsigned long util = task_util(p);
+	unsigned long util = task_util_est(p);
 	long margin = schedtune_task_margin(p);
 
 	trace_sched_boost_task(p, util, margin);
@@ -6918,7 +6923,7 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 			 * accounting. However, the blocked utilization may be zero.
 			 */
 			wake_util = cpu_util_wake(i, p);
-			new_util = wake_util + task_util(p);
+			new_util = wake_util + task_util_est(p);
 
 			/*
 			 * Ensure minimum capacity to grant the required boost.
@@ -7261,7 +7266,7 @@ static int select_energy_cpu_brute(struct task_struct *p, int prev_cpu, int sync
 		int delta = 0;
 		struct energy_env eenv = {
 			.p              = p,
-			.util_delta     = task_util(p),
+			.util_delta     = task_util_est(p),
 			/* Task's previous CPU candidate */
 			.cpu[EAS_CPU_PRV] = {
 				.cpu_id = prev_cpu,

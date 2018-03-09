@@ -1683,9 +1683,6 @@ static inline unsigned long __cpu_util(int cpu, int delta)
 	cfs_rq = &cpu_rq(cpu)->cfs;
 	util = READ_ONCE(cfs_rq->avg.util_avg);
 
-	if (sched_feat(UTIL_EST))
-		util = max(util, READ_ONCE(cfs_rq->avg.util_est.enqueued));
-
 #ifdef CONFIG_SCHED_WALT
 	if (!walt_disabled && sysctl_sched_use_walt_cpu_util)
 		util = div64_u64(cpu_rq(cpu)->cumulative_runnable_avg,
@@ -1694,6 +1691,9 @@ static inline unsigned long __cpu_util(int cpu, int delta)
 	delta += util;
 	if (delta < 0)
 		return 0;
+
+        if (sched_feat(UTIL_EST))
+                util = max(util, READ_ONCE(cfs_rq->avg.util_est.enqueued));
 
 	return min_t(unsigned long, delta, capacity_orig_of(cpu));
 }
