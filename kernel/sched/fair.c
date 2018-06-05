@@ -9642,6 +9642,10 @@ static int need_active_balance(struct lb_env *env)
             env->src_rq->cfs.h_nr_running == 1 && env->src_rq->misfit_task)
                 return 1;
 
+	if (env->src_grp_type == group_overloaded &&
+	    env->src_rq->misfit_task_load)
+		return 1;
+
 	return unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2);
 }
 
