@@ -19,7 +19,7 @@
 #include "sched.h"
 #include "tune.h"
 
-unsigned long boosted_cpu_util(int cpu);
+unsigned long boosted_cpu_util(int cpu, unsigned long other_util);
 
 /* Stub out fast switch routines present on mainline to reduce the backport
  * overhead. */
@@ -216,7 +216,7 @@ static void sugov_get_util(unsigned long *util, unsigned long *max, u64 time)
 	if (use_pelt())
 		*util = *util + rt;
 
-	*util = boosted_cpu_util(cpu) + rt;
+	*util = boosted_cpu_util(cpu, rt);
 	*util = min(*util, max_cap);
 	*max = max_cap;
 }
