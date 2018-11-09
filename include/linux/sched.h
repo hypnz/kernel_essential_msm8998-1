@@ -1819,6 +1819,7 @@ struct task_struct {
 	/* Unbanked cpu time */
 	unsigned long utime_ns, stime_ns;
 #endif
+#endif
 	struct prev_cputime prev_cputime;
 #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
 	struct vtime			vtime;

@@ -771,9 +771,6 @@ TRACE_EVENT(sched_load_avg_cpu,
 
 	TP_fast_assign(
 		__entry->cpu			= cpu;
-		__entry->load_avg		= cfs_rq->avg.load_avg;
-		__entry->util_avg		= cfs_rq->avg.util_avg;
-		__entry->util_avg_pelt	= cfs_rq->avg.util_avg;
 		__entry->util_avg_walt	= 0;
 #ifdef CONFIG_SCHED_WALT
 		__entry->util_avg_walt =

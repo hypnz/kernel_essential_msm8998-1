@@ -1748,16 +1748,16 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 	int this_cpu = smp_processor_id();
 
 	if (cpu == this_cpu) {
-		__schedstat_inc(rq, ttwu_local);
-		__schedstat_inc(p, se.statistics.nr_wakeups_local);
+		__schedstat_inc(rq->ttwu_local);
+		__schedstat_inc(p->se.statistics.nr_wakeups_local);
 	} else {
 		struct sched_domain *sd;
 
-		__schedstat_inc(p, se.statistics.nr_wakeups_remote);
+		__schedstat_inc(p->se.statistics.nr_wakeups_remote);
 		rcu_read_lock();
 		for_each_domain(this_cpu, sd) {
 			if (cpumask_test_cpu(cpu, sched_domain_span(sd))) {
-				__schedstat_inc(sd, ttwu_wake_remote);
+				__schedstat_inc(sd->ttwu_wake_remote);
 				break;
 			}
 		}
@@ -1765,15 +1765,15 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 	}
 
 	if (wake_flags & WF_MIGRATED)
-		__schedstat_inc(p, se.statistics.nr_wakeups_migrate);
+		__schedstat_inc(p->se.statistics.nr_wakeups_migrate);
 
 #endif /* CONFIG_SMP */
 
-	__schedstat_inc(rq, ttwu_count);
-	__schedstat_inc(p, se.statistics.nr_wakeups);
+	__schedstat_inc(rq->ttwu_count);
+	__schedstat_inc(p->se.statistics.nr_wakeups);
 
 	if (wake_flags & WF_SYNC)
-		__schedstat_inc(p, se.statistics.nr_wakeups_sync);
+		__schedstat_inc(p->se.statistics.nr_wakeups_sync);
 
 #endif /* CONFIG_SCHEDSTATS */
 }
@@ -5355,7 +5355,7 @@ static void do_sched_yield(void)
 {
 	struct rq *rq = this_rq_lock();
 
-	schedstat_inc(rq, yld_count);
+	schedstat_inc(rq->yld_count);
 	current->sched_class->yield_task(rq);
 
 	/*
@@ -5512,7 +5512,7 @@ again:
 
 	yielded = curr->sched_class->yield_to_task(rq, p, preempt);
 	if (yielded) {
-		schedstat_inc(rq, yld_count);
+		schedstat_inc(rq->yld_count);
 		/*
 		 * Make p's CPU reschedule; pick_next_entity takes care of
 		 * fairness.

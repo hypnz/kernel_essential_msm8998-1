@@ -77,12 +77,14 @@
 #include <linux/sched/prio.h>
 #include <linux/tick.h>
 #include <linux/skip_list.h>
+#include <linux/sched/wake_q.h>
 
 #include <asm/irq_regs.h>
 #include <asm/switch_to.h>
 #include <asm/tlb.h>
 #include <asm/unistd.h>
 #include <asm/mutex.h>
+#include <asm-generic/cputime_jiffies.h>
 #ifdef CONFIG_PARAVIRT
 #include <asm/paravirt.h>
 #endif
@@ -1763,14 +1765,14 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 
 #ifdef CONFIG_SMP
 	if (cpu == rq->cpu)
-		schedstat_inc(rq->ttwu_local);
+		schedstat_inc(rq, ttwu_local);
 	else {
 		struct sched_domain *sd;
 
 		rcu_read_lock();
 		for_each_domain(rq->cpu, sd) {
 			if (cpumask_test_cpu(cpu, sched_domain_span(sd))) {
-				schedstat_inc(sd->ttwu_wake_remote);
+				schedstat_inc(sd, ttwu_wake_remote);
 				break;
 			}
 		}
@@ -1779,7 +1781,7 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 
 #endif /* CONFIG_SMP */
 
-	schedstat_inc(rq->ttwu_count);
+	schedstat_inc(rq, ttwu_count);
 }
 
 static inline void ttwu_activate(struct rq *rq, struct task_struct *p)
@@ -3654,7 +3656,7 @@ static inline void schedule_debug(struct task_struct *prev)
 
 	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
 
-	schedstat_inc(this_rq()->sched_count);
+	schedstat_inc(this_rq(), sched_count);
 }
 
 /*
@@ -5092,7 +5094,7 @@ SYSCALL_DEFINE0(sched_yield)
 	rq = this_rq_lock();
 	if (sched_yield_type > 1)
 		time_slice_expired(p, rq);
-	schedstat_inc(rq->yld_count);
+	schedstat_inc(rq, yld_count);
 
 	/*
 	 * Since we are going to call schedule() anyway, there's
@@ -5234,7 +5236,7 @@ again:
 	}
 
 	yielded = 1;
-	schedstat_inc(rq->yld_count);
+	schedstat_inc(rq, yld_count);
 	rq_p = rq->curr;
 	if (p->deadline > rq_p->deadline)
 		p->deadline = rq_p->deadline;
