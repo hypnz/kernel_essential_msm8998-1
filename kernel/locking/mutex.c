@@ -422,8 +422,6 @@ static inline int mutex_can_spin_on_owner(struct mutex *lock)
 static bool mutex_optimistic_spin(struct mutex *lock,
 				  struct ww_acquire_ctx *ww_ctx, const bool use_ww_ctx)
 {
-	struct task_struct *task = current;
-
 	if (!mutex_can_spin_on_owner(lock))
 		goto done;
 
