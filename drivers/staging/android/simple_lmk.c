@@ -142,7 +142,7 @@ static unsigned long do_lmk_reclaim(unsigned long pages_needed)
 static cputime_t get_kswapd_cputime(void)
 {
 	struct task_struct *kswapd = NODE_DATA(0)->kswapd;
-	cputime_t stime, unused;
+	u64 stime, unused;
 
 	task_cputime_adjusted(kswapd, &unused, &stime);
 	return stime;
