@@ -7171,23 +7171,6 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 	schedstat_inc(p, se.statistics.nr_wakeups_fbt_count);
 	schedstat_inc(this_rq(), eas_stats.fbt_count);
 
-	/*
-	 * The next step of energy evaluation includes
-	 * prev_cpu. Drop target or backup if it is
-	 * same as prev_cpu
-	 */
-	if (*backup_cpu == prev_cpu)
-		*backup_cpu = -1;
-
-	if (target_cpu == prev_cpu) {
-		target_cpu = *backup_cpu;
-		*backup_cpu = -1;
-	}
-
-	if (target_cpu == -1 && isolated_candidate != -1 &&
-	    cpu_isolated(prev_cpu))
-		target_cpu == isolated_candidate;
-
 	return target_cpu;
 }
 
