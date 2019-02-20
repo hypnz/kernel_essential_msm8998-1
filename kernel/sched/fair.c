@@ -6852,7 +6852,6 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 	int best_idle_cpu = -1;
 	int target_cpu = -1;
 	int cpu, i;
-	int isolated_candidate = -1;
 
 	*backup_cpu = -1;
 
@@ -6899,9 +6898,6 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 
 			if (!cpu_online(i))
 				continue;
-
-			if (isolated_candidate == -1)
-				isolated_candidate = i;
 
 			if (walt_cpu_high_irqload(i))
 				continue;
