@@ -1624,7 +1624,7 @@ static inline unsigned long task_util(struct task_struct *p)
 {
 
 #ifdef CONFIG_SCHED_WALT
-	if (!walt_disabled && sysctl_sched_use_walt_task_util) {
+	if (likely(!walt_disabled && sysctl_sched_use_walt_task_util)) {
 		unsigned long demand = p->ravg.demand;
 		return (demand << 10) / walt_ravg_window;
 	}
