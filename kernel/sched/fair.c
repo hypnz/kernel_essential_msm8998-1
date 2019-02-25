@@ -5065,13 +5065,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 #ifdef CONFIG_SMP
 	int task_new = flags & ENQUEUE_WAKEUP_NEW;
 
+#endif
+
 	/*
-	 * Update SchedTune accounting.
-	 *
-	 * We do it before updating the CPU capacity to ensure the
-	 * boost value of the current task is accounted for in the
-	 * selection of the OPP.
-	 *
+	 * The code below (indirectly) updates schedutil which looks at
+	 * the cfs_rq utilization to select a frequency.
+	 * Let's add the task's estimated utilization to the cfs_rq's
+	 * estimated utilization, before we update schedutil.
+	 */
+	util_est_enqueue(&rq->cfs, p);
+
+	/*
 	 * We do it also in the case where we enqueue a throttled task;
 	 * we could argue that a throttled task should not boost a CPU,
 	 * however:
@@ -5083,15 +5087,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 * also for throttled RQs.
 	 */
 	schedtune_enqueue_task(p, cpu_of(rq));
-#endif
-
-	/*
-	 * The code below (indirectly) updates schedutil which looks at
-	 * the cfs_rq utilization to select a frequency.
-	 * Let's add the task's estimated utilization to the cfs_rq's
-	 * estimated utilization, before we update schedutil.
-	 */
-	util_est_enqueue(&rq->cfs, p);
 
 	/*
 	 * If in_iowait is set, the code below may not trigger any cpufreq
